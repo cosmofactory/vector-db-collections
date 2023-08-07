@@ -1,16 +1,28 @@
 import chromadb
+from chromadb.utils import embedding_functions
+import openai
 
-client = chromadb.PersistentClient(path='./db/')
+
+
+client = chromadb.PersistentClient(path='./db_2/')
+# openai_ef = embedding_functions.OpenAIEmbeddingFunction(
+#                 model_name="text-embedding-ada-002"
+#             )
+
+openai_ef = embedding_functions.OpenAIEmbeddingFunction(
+                api_base='https://api.aiguoguo199.com/v1',
+                api_type="azure",
+                model_name="text-embedding-ada-002"
+            )
 
 print(client.list_collections())
-# # print(client.get_collection('umbrella_chats'))
 
-collection = client.get_collection('umbrella_chats')
-# messages = collection.get(
-#     limit=10,
-#     include=['documents', 'metadatas']
-#     )
-
+collection = client.get_collection('umbrella_chats', embedding_function=openai_ef)
+messages = collection.get(
+    limit=10,
+    include=['documents', 'metadatas']
+    )
+print(messages['documents'])
 
 print(collection.query(
     query_texts='бота',
