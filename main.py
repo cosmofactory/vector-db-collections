@@ -1,31 +1,45 @@
+import os
+
 import chromadb
 from chromadb.utils import embedding_functions
-import openai
+from dotenv import load_dotenv
 
-
+load_dotenv()
 
 client = chromadb.PersistentClient(path='./db_2/')
-# openai_ef = embedding_functions.OpenAIEmbeddingFunction(
-#                 model_name="text-embedding-ada-002"
-#             )
-
 openai_ef = embedding_functions.OpenAIEmbeddingFunction(
-                api_base='https://api.aiguoguo199.com/v1',
-                api_type="azure",
-                model_name="text-embedding-ada-002"
-            )
+    api_key=os.getenv('OPEN_API_KEY'),
+    model_name="text-embedding-ada-002"
+)
+collection = client.get_collection(
+    'umbrella_chats',
+    embedding_function=openai_ef
+)
 
-print(client.list_collections())
 
-collection = client.get_collection('umbrella_chats', embedding_function=openai_ef)
-messages = collection.get(
-    limit=10,
-    include=['documents', 'metadatas']
+def list_collections():
+    return client.list_collections()
+
+
+def get_messages():
+    messages = collection.get(
+        limit=10,
+        include=['documents']
     )
-print(messages['documents'])
+    return messages['documents']
 
-print(collection.query(
-    query_texts='бота',
-    where={'date': '2023-06-01T00:00:00'},
-    include=['documents', 'metadatas']
-))
+
+def get_query():
+
+    search = collection.query(
+        query_texts=['бота'],
+        n_results=10,
+        include=['documents']
+    )
+    return search
+
+
+if __name__ == '__main__':
+    print(list_collections())
+    print(get_messages())
+    print(get_query())
